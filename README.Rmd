@@ -12,10 +12,6 @@ library(tidyverse)
 walk(list.files(here::here("R"), full.names = TRUE), source)
 ```
 
-<!-- badges: start -->
-[![R build status](https://github.com/hamedbh/advent-code-2020/workflows/R-CMD-check/badge.svg)](https://github.com/hamedbh/advent-code-2020/actions)
-<!-- badges: end -->
-  
 Here's the work on Advent of Code 2020. Let's see if I do more than my usual thing of getting halfway and then not finding time for the rest!
 
 # Day 1

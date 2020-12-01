@@ -1,7 +1,5 @@
 ---
 title: "Advent of Code 2020"
-author: "Hamed Bastan-Hagh"
-date: "01/12/2020"
 output: 
     github_document: 
         toc: true

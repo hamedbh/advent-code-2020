@@ -1,7 +1,5 @@
 Advent of Code 2020
 ================
-Hamed Bastan-Hagh
-01/12/2020
 
 -   [Day 1](#day-1)
 

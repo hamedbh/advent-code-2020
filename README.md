@@ -3,12 +3,6 @@ Advent of Code 2020
 
   - [Day 1](#day-1)
 
-<!-- badges: start -->
-
-[![R build
-status](https://github.com/hamedbh/advent-code-2020/workflows/R-CMD-check/badge.svg)](https://github.com/hamedbh/advent-code-2020/actions)
-<!-- badges: end -->
-
 Here’s the work on Advent of Code 2020. Let’s see if I do more than my
 usual thing of getting halfway and then not finding time for the rest\!
 

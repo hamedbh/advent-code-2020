@@ -18,6 +18,7 @@ jobs:
           install.packages("remotes")
           remotes::install_cran("rmarkdown")
           remotes::install_cran("tidyverse")
+          remotes::install_cran("here")
         shell: Rscript {0}
       - name: Render README
         run: Rscript -e 'rmarkdown::render("README.Rmd")'

@@ -74,3 +74,32 @@ day01_expense_report %>%
         sprintf("Part 2 answer is %s", .)
     }
 ```
+
+# Day 2
+
+## Part 1
+
+Count how many of the passwords are valid. Created a function to compare a password and policy and test if it's valid. 
+
+```{r test_password}
+test_password
+```
+
+```{r day02-part1}
+day02_passwords <- read_delim(
+    here::here("data/day02.txt"), 
+    delim = " ", 
+    col_names = c("policy", "letter", "password"), 
+    col_types = "ccc"
+) %>% 
+    # get rid of the trailing colon on the letter
+    mutate(
+        letter = str_remove(letter, ":")
+    )
+day02_passwords %>% 
+    mutate(valid = pmap_lgl(., test_password)) %>% 
+    filter(valid) %>% 
+    {
+        sprintf("Part 1 answer is %s", nrow(.))
+    }
+```

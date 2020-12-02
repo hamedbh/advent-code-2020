@@ -103,3 +103,21 @@ day02_passwords %>%
         sprintf("Part 1 answer is %s", nrow(.))
     }
 ```
+
+## Part 2
+
+Now we need a different version of the password testing function that will comply with the Official Toboggan Corporate Policy (OTCP). 
+
+```{r test_password_OTCP}
+test_password_OTCP
+```
+
+```{r}
+day02_passwords %>% 
+    mutate(valid = pmap_lgl(., test_password_OTCP)) %>% 
+    filter(valid) %>% 
+    {
+        sprintf("Part 2 answer is %s", nrow(.))
+    }
+```
+

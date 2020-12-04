@@ -184,3 +184,67 @@ map2_int(
         sprintf("Part 2 answer is %s", .)
     }
 ```
+# Day 4
+
+## Part 1
+
+Data validation. This is a bit of a busman's holiday but off we go. 
+
+```{r day04-setup}
+# get the required fields
+req <- c("byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid")
+day04_input <- tibble(x = read_lines(here::here("data/day04.txt")))
+
+day04_passports <- day04_input %>% 
+    mutate(id = cumsum(x == "")) %>% 
+    mutate(pairs = str_match_all(x, "(...)\\:([^ ]+)")) %>% 
+    mutate(
+        key = map(pairs, ~ .x[, 2]), 
+        value = map(pairs, ~ .x[, 3])
+    ) %>% 
+    select(-c(x, pairs)) %>% 
+    unnest(c(key, value))
+```
+
+Now we have the passports cleaned up it's just grouping and counting. 
+
+```{r day04-part1}
+day04_valid <- day04_passports %>% 
+    group_by(id) %>% 
+    filter(all(req %in% c(key)))
+
+sprintf("Part 1 answer is %s valid passports", 
+        length(unique(day04_valid$id)))
+```
+
+## Part 2
+
+Now need to validate the values. 
+
+```{r day04-part2}
+day04_valid %>% 
+    # make sure we don't have any stray spaces messing things up in the value 
+    # field
+    mutate(across(where(is.character), str_trim)) %>% 
+    pivot_wider(names_from = "key") %>% 
+    # now filter the records
+    filter(
+        between(as.integer(byr), 1920L, 2002L),
+        between(as.integer(iyr), 2010L, 2020L), 
+        between(as.integer(eyr), 2020L, 2030L),
+        
+        (str_detect(hgt, "cm") & between(parse_number(hgt), 150, 193)) | 
+            (str_detect(hgt, "in") & between(parse_number(hgt), 59, 76)), 
+        
+        str_detect(hcl, "^\\#[a-f0-9]{6}$"), 
+        
+        ecl %in% c("amb", "blu", "brn", "gry", "grn", "hzl", "oth"), 
+        
+        str_detect(pid, "^\\d{9}$")
+    ) %>% 
+    pull(id) %>% 
+    length() %>% 
+    {
+        sprintf("Part 2 answer is %s", .)
+    }
+```

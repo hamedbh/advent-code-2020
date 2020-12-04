@@ -112,7 +112,7 @@ Now we need a different version of the password testing function that will compl
 test_password_OTCP
 ```
 
-```{r}
+```{r day02-part2}
 day02_passwords %>% 
     mutate(valid = pmap_lgl(., test_password_OTCP)) %>% 
     filter(valid) %>% 
@@ -121,3 +121,66 @@ day02_passwords %>%
     }
 ```
 
+# Day 3
+
+## Part 1
+
+Need to navigate the map and count the number of trees we hit travelling **down 1, across 3** at every step. The same map repeats infinitely to the right. 
+
+```{r day03-data}
+# Save the 'raw' input: partly because its dimensions will be useful when
+# creating the map, partly because I'm bound to need it again for Part 2
+day03_input <- readLines(here::here("data/day03.txt"))
+
+day03_map <- day03_input %>% 
+    map(
+        ~ .x %>% 
+            str_split("") %>% 
+            pluck(1)
+    ) %>% 
+    unlist() %>% 
+    matrix(nrow = length(day03_input), byrow = TRUE)
+```
+
+
+```{r count_trees}
+count_trees <- function(map_matrix, step_down, step_right) {
+    
+    # Easier to get the indices we will need separately
+    rows <- seq(1, nrow(map_matrix), by = step_down)
+    columns <- 
+        seq(1, by = step_right, length.out = length(rows)) %% ncol(map_matrix)
+    # Replacing the zeroes is maybe a bit hacky but this is the price we pay for
+    # indexing from 1 and being unwilling to spend time on figuring out a more
+    # elegant solution with modular arithmetic
+    columns[columns == 0L] <- ncol(day03_map)
+    
+    map2_chr(rows, columns, ~ map_matrix[.x, .y]) %>% 
+        str_c(collapse = "") %>% 
+        str_count("#")
+}
+```
+
+
+```{r day03-part1}
+sprintf("Part 1 answer is %s trees", count_trees(day03_map, 1, 3))
+```
+
+## Part 2
+
+Now need to check a number of trajectories and then return the product of the result. 
+
+```{r day03-part2}
+down <-  c(1, 1, 1, 1, 2)
+right <- c(1, 3, 5, 7, 1)
+
+map2_int(
+    down, 
+    right, 
+    ~ count_trees(day03_map, .x, .y)
+) %>% 
+    prod() %>% 
+    {
+        sprintf("Part 2 answer is %s", .)
+    }
+```

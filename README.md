@@ -5,6 +5,7 @@ Advent of Code 2020
   - [Day 2](#day-2)
   - [Day 3](#day-3)
   - [Day 4](#day-4)
+  - [Day 5](#day-5)
 
 Here’s my work on Advent of Code 2020. Let’s see if I do more than my
 usual thing of getting halfway and then not finding time for the rest\!
@@ -276,3 +277,59 @@ day04_valid %>%
 ```
 
     ## [1] "Part 2 answer is 114"
+
+# Day 5
+
+## Part 1
+
+The problem uses binary partitioning to find a seat on the plane. The
+row numbers get higher as they go from the `F`ront to the `B`ack; column
+numbers start low on the `L`eft and are higher on the `R`ight.
+
+Can do this by converting to binary.
+
+``` r
+parse_seat_spec
+```
+
+    ## function (seat_spec) 
+    ## {
+    ##     seat_spec <- seat_spec %>% str_replace_all("B|R", "1") %>% 
+    ##         str_replace_all("F|L", "0")
+    ##     row <- strtoi(str_sub(seat_spec, 1, 7), base = 2)
+    ##     col <- strtoi(str_sub(seat_spec, 8, 10), base = 2)
+    ##     list(row = row, col = col)
+    ## }
+
+Now point this at today’s input.
+
+``` r
+day05_specs <- tibble(seat_spec = read_lines(here::here("data/day05.txt")))
+
+day05_seats <- day05_specs %>% 
+    mutate(combined = map(seat_spec, parse_seat_spec)) %>% 
+    unnest_wider(combined) %>% 
+    mutate(seat_id = map2_int(row, col, ~ (8L * .x) + .y))
+
+sprintf("Part 1 answer: highest seat number is %s", max(day05_seats$seat_id))
+```
+
+    ## [1] "Part 1 answer: highest seat number is 919"
+
+## Part 2
+
+Need to find my seat, which is the only one missing. I know that mine
+won’t be the lowest or highest seat ID.
+
+``` r
+(seq(0, 127) * 8L) %>% 
+    map(~ .x + seq(7)) %>% 
+    unlist() %>% 
+    setdiff(day05_seats$seat_id) %>% 
+    keep(~ between(.x, min(day05_seats$seat_id), max(day05_seats$seat_id))) %>% 
+    {
+        sprintf("Part 2 answer: my seat id is %s", .)
+    }
+```
+
+    ## [1] "Part 2 answer: my seat id is 642"

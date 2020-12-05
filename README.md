@@ -311,10 +311,10 @@ day05_seats <- day05_specs %>%
     unnest_wider(combined) %>% 
     mutate(seat_id = map2_int(row, col, ~ (8L * .x) + .y))
 
-sprintf("Part 1 answer: highest seat number is %s", max(day05_seats$seat_id))
+sprintf("Part 1 answer: highest seat ID is %s", max(day05_seats$seat_id))
 ```
 
-    ## [1] "Part 1 answer: highest seat number is 919"
+    ## [1] "Part 1 answer: highest seat ID is 919"
 
 ## Part 2
 
@@ -322,11 +322,8 @@ Need to find my seat, which is the only one missing. I know that mine
 won’t be the lowest or highest seat ID.
 
 ``` r
-(seq(0, 127) * 8L) %>% 
-    map(~ .x + seq(7)) %>% 
-    unlist() %>% 
+seq(min(day05_seats$seat_id), max(day05_seats$seat_id)) %>% 
     setdiff(day05_seats$seat_id) %>% 
-    keep(~ between(.x, min(day05_seats$seat_id), max(day05_seats$seat_id))) %>% 
     {
         sprintf("Part 2 answer: my seat id is %s", .)
     }

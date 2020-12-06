@@ -364,7 +364,6 @@ in each group. Just replace `union()` with `intersect()`.
 
 ``` r
 day06_answers %>% 
-    mutate(split_x = str_split(x, "")) %>% 
     group_by(group_id) %>% 
     summarise(all_yes = reduce(split_x, intersect), .groups = "drop") %>% 
     nrow() %>% 

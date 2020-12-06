@@ -6,6 +6,7 @@ Advent of Code 2020
   - [Day 3](#day-3)
   - [Day 4](#day-4)
   - [Day 5](#day-5)
+  - [Day 6](#day-6)
 
 Here’s my work on Advent of Code 2020. Let’s see if I do more than my
 usual thing of getting halfway and then not finding time for the rest\!
@@ -330,3 +331,46 @@ seq(min(day05_seats$seat_id), max(day05_seats$seat_id)) %>%
 ```
 
     ## [1] "Part 2 answer: my seat id is 642"
+
+# Day 6
+
+## Part 1
+
+Need counts for how many distinct questions were answered yes by anyone
+in each group. Or: the union of all the sets of answers.
+
+``` r
+day06_answers <- tibble(x = read_lines(here::here("data/day06.txt"))) %>% 
+    mutate(group_id = cumsum(x == "")) %>% 
+    filter(x != "") %>% 
+    add_count(group_id, name = "group_size") %>% 
+    mutate(split_x = str_split(x, ""))
+
+day06_answers %>% 
+    group_by(group_id) %>% 
+    summarise(all_yes = reduce(split_x, union), .groups = "drop") %>% 
+    nrow() %>% 
+    {
+        sprintf("Part 1 answer is %s", .)
+    }
+```
+
+    ## [1] "Part 1 answer is 6351"
+
+## Part 2
+
+Now need counts for how many questions were answered yes by *everyone*
+in each group. Just replace `union()` with `intersect()`.
+
+``` r
+day06_answers %>% 
+    mutate(split_x = str_split(x, "")) %>% 
+    group_by(group_id) %>% 
+    summarise(all_yes = reduce(split_x, intersect), .groups = "drop") %>% 
+    nrow() %>% 
+    {
+        sprintf("Part 2 answer is %s", .)
+    }
+```
+
+    ## [1] "Part 2 answer is 3143"

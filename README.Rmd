@@ -299,7 +299,6 @@ Now need counts for how many questions were answered yes by _everyone_ in each g
 
 ```{r}
 day06_answers %>% 
-    mutate(split_x = str_split(x, "")) %>% 
     group_by(group_id) %>% 
     summarise(all_yes = reduce(split_x, intersect), .groups = "drop") %>% 
     nrow() %>% 

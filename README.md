@@ -7,6 +7,7 @@ Advent of Code 2020
   - [Day 4](#day-4)
   - [Day 5](#day-5)
   - [Day 6](#day-6)
+  - [Day 7](#day-7)
 
 Here’s my work on Advent of Code 2020. Let’s see if I do more than my
 usual thing of getting halfway and then not finding time for the rest\!
@@ -19,10 +20,10 @@ First we need the product of the two numbers in the expense report that
 add to 2020.
 
 ``` r
-day01_expense_report <- readLines(here::here("data/day01.txt")) %>% 
+day1_expense_report <- readLines(here::here("data/day1.txt")) %>% 
     as.double()
 
-day01_expense_report %>% 
+day1_expense_report %>% 
     {
         expand_grid(
             num1 = ., 
@@ -51,7 +52,7 @@ day01_expense_report %>%
 Now do the same but for the **three** numbers that add to 2020.
 
 ``` r
-day01_expense_report %>% 
+day1_expense_report %>% 
     {
         expand_grid(
             num1 = ., 
@@ -97,8 +98,8 @@ test_password
     ## }
 
 ``` r
-day02_passwords <- read_delim(
-    here::here("data/day02.txt"), 
+day2_passwords <- read_delim(
+    here::here("data/day2.txt"), 
     delim = " ", 
     col_names = c("policy", "letter", "password"), 
     col_types = "ccc"
@@ -107,7 +108,7 @@ day02_passwords <- read_delim(
     mutate(
         letter = str_remove(letter, ":")
     )
-day02_passwords %>% 
+day2_passwords %>% 
     mutate(valid = pmap_lgl(., test_password)) %>% 
     filter(valid) %>% 
     {
@@ -136,7 +137,7 @@ test_password_OTCP
     ## }
 
 ``` r
-day02_passwords %>% 
+day2_passwords %>% 
     mutate(valid = pmap_lgl(., test_password_OTCP)) %>% 
     filter(valid) %>% 
     {
@@ -157,16 +158,16 @@ the right.
 ``` r
 # Save the 'raw' input: partly because its dimensions will be useful when
 # creating the map, partly because I'm bound to need it again for Part 2
-day03_input <- readLines(here::here("data/day03.txt"))
+day3_input <- readLines(here::here("data/day3.txt"))
 
-day03_map <- day03_input %>% 
+day3_map <- day3_input %>% 
     map(
         ~ .x %>% 
             str_split("") %>% 
             pluck(1)
     ) %>% 
     unlist() %>% 
-    matrix(nrow = length(day03_input), byrow = TRUE)
+    matrix(nrow = length(day3_input), byrow = TRUE)
 ```
 
 ``` r
@@ -177,13 +178,13 @@ count_trees
     ## {
     ##     rows <- seq(1, nrow(map_matrix), by = step_down)
     ##     columns <- seq(1, by = step_right, length.out = length(rows))%%ncol(map_matrix)
-    ##     columns[columns == 0L] <- ncol(day03_map)
+    ##     columns[columns == 0L] <- ncol(map_matrix)
     ##     map2_chr(rows, columns, ~map_matrix[.x, .y]) %>% str_c(collapse = "") %>% 
     ##         str_count("#")
     ## }
 
 ``` r
-sprintf("Part 1 answer is %s trees", count_trees(day03_map, 1, 3))
+sprintf("Part 1 answer is %s trees", count_trees(day3_map, 1, 3))
 ```
 
     ## [1] "Part 1 answer is 198 trees"
@@ -200,7 +201,7 @@ right <- c(1, 3, 5, 7, 1)
 map2_int(
     down, 
     right, 
-    ~ count_trees(day03_map, .x, .y)
+    ~ count_trees(day3_map, .x, .y)
 ) %>% 
     prod() %>% 
     {
@@ -219,9 +220,9 @@ Data validation. This is a bit of a busman’s holiday but off we go.
 ``` r
 # get the required fields
 req <- c("byr", "iyr", "eyr", "hgt", "hcl", "ecl", "pid")
-day04_input <- tibble(x = read_lines(here::here("data/day04.txt")))
+day4_input <- tibble(x = read_lines(here::here("data/day4.txt")))
 
-day04_passports <- day04_input %>% 
+day4_passports <- day4_input %>% 
     mutate(id = cumsum(x == "")) %>% 
     mutate(pairs = str_match_all(x, "(...)\\:([^ ]+)")) %>% 
     mutate(
@@ -235,12 +236,12 @@ day04_passports <- day04_input %>%
 Now we have the passports cleaned up it’s just grouping and counting.
 
 ``` r
-day04_valid <- day04_passports %>% 
+day4_valid <- day4_passports %>% 
     group_by(id) %>% 
     filter(all(req %in% c(key)))
 
 sprintf("Part 1 answer is %s valid passports", 
-        length(unique(day04_valid$id)))
+        length(unique(day4_valid$id)))
 ```
 
     ## [1] "Part 1 answer is 196 valid passports"
@@ -250,7 +251,7 @@ sprintf("Part 1 answer is %s valid passports",
 Now need to validate the values.
 
 ``` r
-day04_valid %>% 
+day4_valid %>% 
     # make sure we don't have any stray spaces messing things up in the value 
     # field
     mutate(across(where(is.character), str_trim)) %>% 
@@ -305,14 +306,14 @@ parse_seat_spec
 Now point this at today’s input.
 
 ``` r
-day05_specs <- tibble(seat_spec = read_lines(here::here("data/day05.txt")))
+day5_specs <- tibble(seat_spec = read_lines(here::here("data/day5.txt")))
 
-day05_seats <- day05_specs %>% 
+day5_seats <- day5_specs %>% 
     mutate(combined = map(seat_spec, parse_seat_spec)) %>% 
     unnest_wider(combined) %>% 
     mutate(seat_id = map2_int(row, col, ~ (8L * .x) + .y))
 
-sprintf("Part 1 answer: highest seat ID is %s", max(day05_seats$seat_id))
+sprintf("Part 1 answer: highest seat ID is %s", max(day5_seats$seat_id))
 ```
 
     ## [1] "Part 1 answer: highest seat ID is 919"
@@ -323,8 +324,8 @@ Need to find my seat, which is the only one missing. I know that mine
 won’t be the lowest or highest seat ID.
 
 ``` r
-seq(min(day05_seats$seat_id), max(day05_seats$seat_id)) %>% 
-    setdiff(day05_seats$seat_id) %>% 
+seq(min(day5_seats$seat_id), max(day5_seats$seat_id)) %>% 
+    setdiff(day5_seats$seat_id) %>% 
     {
         sprintf("Part 2 answer: my seat id is %s", .)
     }
@@ -340,13 +341,13 @@ Need counts for how many distinct questions were answered yes by anyone
 in each group. Or: the union of all the sets of answers.
 
 ``` r
-day06_answers <- tibble(x = read_lines(here::here("data/day06.txt"))) %>% 
+day6_answers <- tibble(x = read_lines(here::here("data/day6.txt"))) %>% 
     mutate(group_id = cumsum(x == "")) %>% 
     filter(x != "") %>% 
     add_count(group_id, name = "group_size") %>% 
     mutate(split_x = str_split(x, ""))
 
-day06_answers %>% 
+day6_answers %>% 
     group_by(group_id) %>% 
     summarise(all_yes = reduce(split_x, union), .groups = "drop") %>% 
     nrow() %>% 
@@ -363,7 +364,7 @@ Now need counts for how many questions were answered yes by *everyone*
 in each group. Just replace `union()` with `intersect()`.
 
 ``` r
-day06_answers %>% 
+day6_answers %>% 
     group_by(group_id) %>% 
     summarise(all_yes = reduce(split_x, intersect), .groups = "drop") %>% 
     nrow() %>% 
@@ -373,3 +374,62 @@ day06_answers %>%
 ```
 
     ## [1] "Part 2 answer is 3143"
+
+# Day 7
+
+## Part 1
+
+``` r
+day7_input <- read_lines(here::here("data/day7.txt"))
+day7_tidy <- tibble(x = day7_input) %>%
+    separate(x, into = c("outside", "inside"), sep = " contain ") %>% 
+    separate_rows(inside, sep = ", ") %>% 
+    filter(!(str_detect(inside, "no other bag"))) %>% 
+    mutate(inside_bag_count = parse_number(inside)) %>% 
+    mutate(
+        outside = str_match(outside, "([a-z]+ [a-z]+) bag")[, 2], 
+        inside  = str_match(inside, "^\\d+ ([a-z]+ [a-z]+) bag")[, 2]
+    )
+
+day7_tidy %>% 
+    select(from = inside, to = outside) %>% 
+    graph_from_data_frame() %>% 
+    all_simple_paths(
+        from = "shiny gold", 
+        mode = "out"
+    ) %>% 
+    map(~ attr(.x, "names") %>% str_subset("shiny gold", negate = TRUE)) %>% 
+    unlist() %>% 
+    unique() %>% 
+    length() %>% 
+    {
+        sprintf("There are %s possible containers", .)
+    }
+```
+
+    ## [1] "There are 142 possible containers"
+
+## Part 2
+
+Now we need to count the total number of bags that the `shiny gold` must
+contain. Use some recursion for this. Took me a while to get it right,
+forgot to add the 1 at the end.
+
+``` r
+count_bags <- function(bag_desc) {
+    d <- day7_tidy %>% 
+        filter(outside == bag_desc)
+    
+    sum(
+        d$inside_bag_count * 
+            (map_dbl(d$inside, count_bags) + 1)
+    )
+}
+
+sprintf(
+    "Part 2 answer: the shiny gold bag must contain %s other bags", 
+    count_bags("shiny gold")
+)
+```
+
+    ## [1] "Part 2 answer: the shiny gold bag must contain 10219 other bags"

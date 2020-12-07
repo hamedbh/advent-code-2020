@@ -7,7 +7,7 @@ count_trees <- function(map_matrix, step_down, step_right) {
     # Replacing the zeroes is maybe a bit hacky but this is the price we pay for
     # indexing from 1 and being unwilling to spend time on figuring out a more
     # elegant solution with modular arithmetic
-    columns[columns == 0L] <- ncol(day03_map)
+    columns[columns == 0L] <- ncol(map_matrix)
     
     map2_chr(rows, columns, ~ map_matrix[.x, .y]) %>% 
         str_c(collapse = "") %>% 

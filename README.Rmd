@@ -360,3 +360,58 @@ sprintf(
     count_bags("shiny gold")
 )
 ```
+
+# Day 8
+
+## Part 1
+
+Parsing a boot code. Similar to the intcode thing from last year. This looks like a job for a `while` loop with some bookkeeping. Wrap it in a function as it's likely we'll need it again. 
+
+```{r parse_boot_code}
+parse_boot_code
+```
+
+
+```{r day8-part1}
+day8_input <- tibble(x = read_lines(here::here("data/day8.txt"))) %>% 
+    separate(x, into = c("cmd", "value"), sep = " ", convert = TRUE)
+
+parse_boot_code(day8_input) %>% 
+    pluck("accumulator") %>% 
+    {
+        sprintf("Part 1 answer: the accumulator is %s", .)
+    }
+```
+
+## Part 2
+
+Now we need to fix the corrupted boot code. In other words: for each of the `jmp` and `nop` commands in the boot code we need to figure out if switching it will cause the programme to terminate because it's gone past the end of the code (rather than because it's looped round to something it already visited). 
+
+```{r}
+to_test <- day8_input %>% 
+    rowid_to_column() %>% 
+    filter(cmd %in% c("jmp", "nop")) %>% 
+    mutate(
+        new_cmd = map_chr(cmd, ~ switch(.x, jmp = "nop", nop = "jmp"))
+    )
+
+to_test %>% 
+    mutate(
+        res = map2(
+            rowid, 
+            new_cmd, 
+            function(rowid, new_cmd) {
+                tmp <- day8_input
+                tmp[rowid, "cmd"] <- new_cmd
+                parse_boot_code(tmp)
+            }
+        )
+    ) %>% 
+    unnest_wider(res) %>% 
+    filter(i > nrow(day8_input)) %>% 
+    pull(accumulator) %>% 
+    {
+        sprintf("Part 2 answer: the accumulator is %s", .)
+    }
+```
+

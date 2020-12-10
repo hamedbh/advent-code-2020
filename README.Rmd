@@ -478,7 +478,7 @@ while(isFALSE(found_error)) {
     }
 }
 day9_part1_ans <- day9_input[i]
-sprintf("Part 1 answer is %s", part1_ans)
+sprintf("Part 1 answer is %s", day9_part1_ans)
 ```
 
 ## Part 2

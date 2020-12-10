@@ -9,6 +9,7 @@ Advent of Code 2020
   - [Day 6](#day-6)
   - [Day 7](#day-7)
   - [Day 8](#day-8)
+  - [Day 9](#day-9)
 
 Here’s my work on Advent of Code 2020. Let’s see if I do more than my
 usual thing of getting halfway and then not finding time for the rest\!
@@ -380,26 +381,43 @@ day6_answers %>%
 
 ## Part 1
 
+This sort of problem lends itself to some sort of graph structure. Time
+to learn a bit about {igraph}.
+
 ``` r
 day7_input <- read_lines(here::here("data/day7.txt"))
-day7_tidy <- tibble(x = day7_input) %>%
-    separate(x, into = c("outside", "inside"), sep = " contain ") %>% 
-    separate_rows(inside, sep = ", ") %>% 
-    filter(!(str_detect(inside, "no other bag"))) %>% 
-    mutate(inside_bag_count = parse_number(inside)) %>% 
-    mutate(
-        outside = str_match(outside, "([a-z]+ [a-z]+) bag")[, 2], 
-        inside  = str_match(inside, "^\\d+ ([a-z]+ [a-z]+) bag")[, 2]
-    )
 
-day7_tidy %>% 
-    select(from = inside, to = outside) %>% 
-    graph_from_data_frame() %>% 
-    all_simple_paths(
-        from = "shiny gold", 
-        mode = "out"
-    ) %>% 
-    map(~ attr(.x, "names") %>% str_subset("shiny gold", negate = TRUE)) %>% 
+day7_tidy <- tibble(x = day7_input) %>%
+    separate(x, into = c("outside", "inside"), sep = " bags contain ") %>%
+    separate_rows(inside, sep = ", ") %>%
+    mutate(inside = str_remove(inside, " bags?.?")) %>%
+    separate(inside, into = c("weight", "inside"), extra = "merge") %>%
+    mutate(weight = str_replace(weight, "no", "0") %>% parse_number())
+
+day7_nodes <- tibble(desc = union(day7_tidy$outside, day7_tidy$inside)) %>%
+    rowid_to_column()
+
+day7_edges <- day7_tidy %>%
+    left_join(day7_nodes, by = c("outside" = "desc")) %>% 
+    rename(to = rowid) %>% 
+    left_join(day7_nodes, by = c("inside" = "desc")) %>% 
+    rename(from = rowid) %>% 
+    filter(!near(weight, 0)) %>% 
+    select(from, to, weight)
+
+day7_graph <- tbl_graph(
+    nodes = day7_nodes, 
+    edges = day7_edges, 
+    directed = TRUE
+)
+
+shiny_gold_id <- day7_nodes %>% filter(desc == "shiny gold") %>% pull(rowid)
+all_simple_paths(
+    day7_graph, 
+    from = shiny_gold_id, 
+    mode = "out"
+) %>% 
+    map(~ .x %>% as.integer() %>% discard(~ .x == shiny_gold_id)) %>% 
     unlist() %>% 
     unique() %>% 
     length() %>% 
@@ -412,6 +430,34 @@ day7_tidy %>%
 
 ## Part 2
 
+Previously I had done this with recursion because I hadn’t set up the
+graph correctly, so my answers were off, which made me give up on the
+graph thing. I’ve kept that method below for posterity. Switching to a
+graph makes it easier and matches the intuition of the problem.
+
+``` r
+all_simple_paths(day7_graph, from = shiny_gold_id, mode = "in") %>% 
+    map_dbl(
+        function(x) {
+            x <- unclass(x)
+            tibble(to = x[seq_along(x) - 1], 
+                   from = x[seq(2, length(x))]) %>% 
+                left_join(day7_edges, by = c("to", "from")) %>% 
+                pull(weight) %>% 
+                prod()
+        }
+    ) %>% 
+    sum() %>% 
+    {
+        sprintf(
+            "Part 2 answer: the shiny gold bag must contain %s other bags", 
+            .
+        )
+    }
+```
+
+    ## [1] "Part 2 answer: the shiny gold bag must contain 10219 other bags"
+
 Now we need to count the total number of bags that the `shiny gold` must
 contain. Use some recursion for this. Took me a while to get it right,
 forgot to add the 1 at the end.
@@ -422,7 +468,7 @@ count_bags <- function(bag_desc) {
         filter(outside == bag_desc)
     
     sum(
-        d$inside_bag_count * 
+        d$weight * 
             (map_dbl(d$inside, count_bags) + 1)
     )
 }
@@ -523,3 +569,58 @@ to_test %>%
 ```
 
     ## [1] "Part 2 answer: the accumulator is 892"
+
+# Day 9
+
+## Part 1
+
+Finding all combinations of the previous 25 values is nice and quick
+with matrices.
+
+``` r
+day9_input <- read_lines(here::here("data/day9.txt")) %>% 
+    as.double()
+
+preamble <- 25L
+found_error <- FALSE
+i <- preamble + 1L
+while(isFALSE(found_error)) {
+    prev <- day9_input[seq(i - preamble, i - 1L)]
+    summed <- outer(prev, prev, "+")
+    if (day9_input[i] %in% summed) {
+        i <- i + 1L
+    } else {
+        found_error <- TRUE
+    }
+}
+day9_part1_ans <- day9_input[i]
+sprintf("Part 1 answer is %s", day9_part1_ans)
+```
+
+    ## [1] "Part 1 answer is 1492208709"
+
+## Part 2
+
+We get told that the range is *contiguous*, so we can loop over the
+vector just once and keep a running total. If it’s too small just raise
+the upper bound for the range; if it’s too large raise the lower bound.
+
+``` r
+lower <- 1
+upper <- 1
+total <- sum(day9_input[seq(from = lower, to = upper)])
+while (total != day9_part1_ans) {
+    if (total < day9_part1_ans) {
+        upper <- upper + 1
+    } else {
+        lower <- lower + 1
+    }
+    total <- sum(day9_input[seq(from = lower, to = upper)])
+}
+sprintf(
+    "Part 2 answer is %s", 
+    sum(range(day9_input[lower:upper]))
+)
+```
+
+    ## [1] "Part 2 answer is 238243506"

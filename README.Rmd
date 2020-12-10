@@ -455,3 +455,51 @@ to_test %>%
     }
 ```
 
+# Day 9
+
+## Part 1
+
+Finding all combinations of the previous 25 values is nice and quick with matrices. 
+
+```{r day9-part1}
+day9_input <- read_lines(here::here("data/day9.txt")) %>% 
+    as.double()
+
+preamble <- 25L
+found_error <- FALSE
+i <- preamble + 1L
+while(isFALSE(found_error)) {
+    prev <- day9_input[seq(i - preamble, i - 1L)]
+    summed <- outer(prev, prev, "+")
+    if (day9_input[i] %in% summed) {
+        i <- i + 1L
+    } else {
+        found_error <- TRUE
+    }
+}
+day9_part1_ans <- day9_input[i]
+sprintf("Part 1 answer is %s", part1_ans)
+```
+
+## Part 2
+
+We get told that the range is _contiguous_, so we can loop over the vector just once and keep a running total. If it's too small just raise the upper bound for the range; if it's too large raise the lower bound. 
+
+```{r day9-part2}
+lower <- 1
+upper <- 1
+total <- sum(day9_input[seq(from = lower, to = upper)])
+while (total != day9_part1_ans) {
+    if (total < day9_part1_ans) {
+        upper <- upper + 1
+    } else {
+        lower <- lower + 1
+    }
+    total <- sum(day9_input[seq(from = lower, to = upper)])
+}
+sprintf(
+    "Part 2 answer is %s", 
+    sum(range(day9_input[lower:upper]))
+)
+```
+

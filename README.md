@@ -8,6 +8,7 @@ Advent of Code 2020
   - [Day 5](#day-5)
   - [Day 6](#day-6)
   - [Day 7](#day-7)
+  - [Day 8](#day-8)
 
 Here’s my work on Advent of Code 2020. Let’s see if I do more than my
 usual thing of getting halfway and then not finding time for the rest\!
@@ -433,3 +434,92 @@ sprintf(
 ```
 
     ## [1] "Part 2 answer: the shiny gold bag must contain 10219 other bags"
+
+# Day 8
+
+## Part 1
+
+Parsing a boot code. Similar to the intcode thing from last year. This
+looks like a job for a `while` loop with some bookkeeping. Wrap it in a
+function as it’s likely we’ll need it again.
+
+``` r
+parse_boot_code
+```
+
+    ## function (boot_code) 
+    ## {
+    ##     i <- 1L
+    ##     visited <- i
+    ##     total <- length(visited)
+    ##     accumulator <- 0L
+    ##     while (!any(duplicated(visited)) & i <= nrow(boot_code)) {
+    ##         current <- boot_code[i, ]
+    ##         cmd <- current$cmd
+    ##         value <- current$value
+    ##         if (cmd == "acc") {
+    ##             accumulator <- accumulator + value
+    ##             i <- i + 1L
+    ##         }
+    ##         else if (cmd == "jmp") {
+    ##             i <- i + value
+    ##         }
+    ##         else {
+    ##             i <- i + 1L
+    ##         }
+    ##         visited <- c(visited, i)
+    ##     }
+    ##     list(accumulator = accumulator, i = i, visited = visited, 
+    ##         total = total)
+    ## }
+
+``` r
+day8_input <- tibble(x = read_lines(here::here("data/day8.txt"))) %>% 
+    separate(x, into = c("cmd", "value"), sep = " ", convert = TRUE)
+
+parse_boot_code(day8_input) %>% 
+    pluck("accumulator") %>% 
+    {
+        sprintf("Part 1 answer: the accumulator is %s", .)
+    }
+```
+
+    ## [1] "Part 1 answer: the accumulator is 1671"
+
+## Part 2
+
+Now we need to fix the corrupted boot code. In other words: for each of
+the `jmp` and `nop` commands in the boot code we need to figure out if
+switching it will cause the programme to terminate because it’s gone
+past the end of the code (rather than because it’s looped round to
+something it already visited).
+
+``` r
+to_test <- day8_input %>% 
+    rowid_to_column() %>% 
+    filter(cmd %in% c("jmp", "nop")) %>% 
+    mutate(
+        new_cmd = map_chr(cmd, ~ switch(.x, jmp = "nop", nop = "jmp"))
+    )
+
+to_test %>% 
+    mutate(
+        res = map2(
+            rowid, 
+            new_cmd, 
+            function(rowid, new_cmd) {
+                tmp <- day8_input
+                tmp[rowid, "cmd"] <- new_cmd
+                parse_boot_code(tmp)
+            }
+        )
+    ) %>% 
+    unnest_wider(res) %>% 
+    filter(i > nrow(day8_input)) %>% 
+    pull(accumulator) %>% 
+    {
+        sprintf("Part 2 answer: the accumulator is %s", .)
+    }
+```
+
+    ## [1] "Part 2 answer: the accumulator is 892"

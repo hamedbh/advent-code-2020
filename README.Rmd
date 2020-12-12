@@ -503,3 +503,63 @@ sprintf(
 )
 ```
 
+# Day 10
+
+## Part 1
+
+```{r}
+ex <- read_lines("day10_ex.txt") %>% 
+    as.integer() %>% 
+    {
+        c(
+            ., 
+            0L, 
+            max(.) + 3L
+        )
+    }
+
+table(diff(sort(ex)))
+```
+
+```{r}
+day10_input <- read_lines(here::here("data/day10.txt")) %>% 
+    as.integer() %>% 
+    {
+        c(., 0L, max(.) + 3L)
+    } %>% 
+    sort()
+
+sprintf("Part 1 answer is %s", prod(table(diff(day10_input))))
+```
+
+## Part 2
+
+Counting all of the combinations is a non-starter. We can look at the table of diffs from Part 1 though: 
+
+```{r day10-diff-table}
+table(diff(day10_input))
+```
+
+Just 1 and 3. And what is the longest run of 1's in the data?
+
+```{r day10-runs}
+runs <- rle(diff(day10_input))
+max(runs$lengths[runs$values == 1])
+```
+
+So then we just multiply each run of ones by the number of ways to rearrange them to make up the length of the run. So if there's a length 3 run of 1's you could rearrange them in 4 ways. There's 1 way to make 1 from 1's; 2 ways to make 2 (1 + 1 or 2); 4 ways to make 3; and 7 ways to make 7. 
+
+```{r day10-part2}
+runs$lengths[runs$values == 1] %>% 
+    as.integer() %>% 
+    {
+        c(1, 2, 4, 7)[.]
+    } %>% 
+    prod() %>% 
+    as.character() %>% 
+    {
+        sprintf("Part 2 answer is %s", .)
+    }
+```
+
+

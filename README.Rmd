@@ -510,12 +510,6 @@ sprintf(
 This first part is just about counting how many of the jolts have a `diff()` of 1 or 3. Can quickly check the table of all the diffs: 
 
 ```{r day10-diff-table}
-table(diff(day10_input))
-```
-
-There are only diffs of 1 and 3, which simplifies things. 
-
-```{r day10-part1}
 day10_input <- read_lines(here::here("data/day10.txt")) %>% 
     as.integer() %>% 
     {
@@ -523,6 +517,12 @@ day10_input <- read_lines(here::here("data/day10.txt")) %>%
     } %>% 
     sort()
 
+table(diff(day10_input))
+```
+
+There are only diffs of 1 and 3, which simplifies things. 
+
+```{r day10-part1}
 sprintf("Part 1 answer is %s", prod(table(diff(day10_input))))
 ```
 

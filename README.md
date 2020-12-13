@@ -677,7 +677,6 @@ make 7.
 
 ``` r
 runs$lengths[runs$values == 1] %>% 
-    as.integer() %>% 
     {
         c(1, 2, 4, 7)[.]
     } %>% 

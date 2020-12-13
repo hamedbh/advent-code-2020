@@ -10,6 +10,7 @@ Advent of Code 2020
   - [Day 7](#day-7)
   - [Day 8](#day-8)
   - [Day 9](#day-9)
+  - [Day 10](#day-10)
 
 Here’s my work on Advent of Code 2020. Let’s see if I do more than my
 usual thing of getting halfway and then not finding time for the rest\!
@@ -624,3 +625,67 @@ sprintf(
 ```
 
     ## [1] "Part 2 answer is 238243506"
+
+# Day 10
+
+## Part 1
+
+This first part is just about counting how many of the jolts have a
+`diff()` of 1 or 3. Can quickly check the table of all the diffs:
+
+``` r
+day10_input <- read_lines(here::here("data/day10.txt")) %>% 
+    as.integer() %>% 
+    {
+        c(., 0L, max(.) + 3L)
+    } %>% 
+    sort()
+
+table(diff(day10_input))
+```
+
+    ## 
+    ##  1  3 
+    ## 64 32
+
+There are only diffs of 1 and 3, which simplifies things.
+
+``` r
+sprintf("Part 1 answer is %s", prod(table(diff(day10_input))))
+```
+
+    ## [1] "Part 1 answer is 2048"
+
+## Part 2
+
+Counting all of the combinations is a non-starter. We know from Part 1
+though that there are only diffs of 1 and 3 in the data. And what is the
+longest run of 1’s in the data?
+
+``` r
+runs <- rle(diff(day10_input))
+max(runs$lengths[runs$values == 1])
+```
+
+    ## [1] 4
+
+So then we just multiply each run of ones by the number of ways to
+rearrange them to make up the length of the run. So if there’s a length
+3 run of 1’s you could rearrange them in 4 ways. There’s 1 way to make 1
+from 1’s; 2 ways to make 2 (1 + 1 or 2); 4 ways to make 3; and 7 ways to
+make 7.
+
+``` r
+runs$lengths[runs$values == 1] %>% 
+    as.integer() %>% 
+    {
+        c(1, 2, 4, 7)[.]
+    } %>% 
+    prod() %>% 
+    as.character() %>% 
+    {
+        sprintf("Part 2 answer is %s", .)
+    }
+```
+
+    ## [1] "Part 2 answer is 1322306994176"

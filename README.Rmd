@@ -539,7 +539,6 @@ So then we just multiply each run of ones by the number of ways to rearrange the
 
 ```{r day10-part2}
 runs$lengths[runs$values == 1] %>% 
-    as.integer() %>% 
     {
         c(1, 2, 4, 7)[.]
     } %>% 
